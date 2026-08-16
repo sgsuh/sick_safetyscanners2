@@ -1,0 +1,14 @@
+# Workspace dependencies that have to be built from source.
+#
+# sick_safetyscanners2_interfaces: the released jazzy debian is still at 1.0.0,
+# which predates StatusOverview.srv — required by src/SickSafetyscanners.cpp.
+# Pinned to a tag for reproducible images; bump when the debian catches up.
+#
+# sick_safetyscanners_base is NOT listed here: the released debian
+# (ros-jazzy-sick-safetyscanners-base 1.0.3) already provides
+# requestStatusOverview() and is installed by rosdep.
+repositories:
+  sick_safetyscanners2_interfaces:
+    type: git
+    url: https://github.com/SICKAG/sick_safetyscanners2_interfaces.git
+    version: "1.0.1"

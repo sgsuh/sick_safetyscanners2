@@ -1,0 +1,17 @@
+# Build artifacts that must never leak into the image
+build/
+install/
+log/
+
+# VCS / editor / OS noise
+.git/
+.github/
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Python caches
+__pycache__/
+*.py[cod]

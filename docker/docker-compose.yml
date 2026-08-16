@@ -1,0 +1,54 @@
+# Usage (from the repository root):
+#   docker compose -f docker/docker-compose.yml build
+#   docker compose -f docker/docker-compose.yml up -d
+#   docker compose -f docker/docker-compose.yml exec driver bash
+#
+# host networking is required: the scanner streams measurement data over UDP to
+# host_ip, and DDS discovery between container and host works out of the box.
+
+# Explicit project name: without it compose derives one from the parent
+# directory ("docker"), which collides with every other repo laid out this way.
+name: sick_safetyscanners2
+
+services:
+  driver:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        ROS_DISTRO: ${ROS_DISTRO:-jazzy}
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
+        INSTALL_GUI: ${INSTALL_GUI:-true}
+    image: sick_safetyscanners2:${ROS_DISTRO:-jazzy}
+    container_name: sick_safetyscanners2
+    hostname: sick-safetyscanners2
+
+    network_mode: host
+    # Keep DDS shared memory inside the container. Add `ipc: host` only when
+    # another ROS 2 container has to share memory with this one.
+    shm_size: 512mb
+    # tcpdump on the scanner's UDP stream; drop if not needed.
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+
+    environment:
+      ROS_DOMAIN_ID: ${ROS_DOMAIN_ID:-0}
+      # Cyclone rather than the Fast DDS default: see docker/README.md.
+      RMW_IMPLEMENTATION: ${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}
+      # GUI (rviz2). Harmless when no X server is reachable.
+      DISPLAY: ${DISPLAY:-:0}
+      QT_X11_NO_MITSHM: 1
+
+    volumes:
+      # Live source: edit on the host, rebuild inside the container.
+      - ..:/ros2_ws/src/sick_safetyscanners2:rw
+      # X11 socket for rviz2 (WSLg exposes its X server here as well).
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+    stdin_open: true
+    tty: true
+    # Keep the container alive so `exec` can be used repeatedly; override with
+    # `docker compose run --rm driver ros2 launch ...` for one-shot commands.
+    command: sleep infinity

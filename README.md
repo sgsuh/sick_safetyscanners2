@@ -58,6 +58,17 @@ colcon build --symlink-install
 source ~/colcon_ws/install/setup.sh
 ```
 
+#### Docker (ROS 2 Jazzy)
+
+A ready-to-use container with all dependencies pre-built is provided under
+[`docker/`](docker/README.md):
+
+```bash
+docker compose -f docker/docker-compose.yml build
+docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml exec driver bash
+```
+
 ### Starting
 
 #### Classic Node
