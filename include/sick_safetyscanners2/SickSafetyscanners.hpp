@@ -73,8 +73,9 @@ public:
     boost::asio::ip::address_v4 m_interface_ip;
     std::string m_frame_id;
     double m_time_offset = 0.0;
+    // Zero means "not set by parameter"; the sensor's type code is used then.
     double m_range_min = 0.0;
-    double m_range_max;
+    double m_range_max = 0.0;
     double m_frequency_tolerance = 0.1;
     double m_expected_frequency = 34.0;
     double m_timestamp_min_acceptable = -1.0;
@@ -115,6 +116,8 @@ public:
     node.template declare_parameter<int>("channel", 0);
     node.template declare_parameter<bool>("channel_enabled", true);
     node.template declare_parameter<int>("skip", 0);
+    node.template declare_parameter<double>("min_range", 0.0);
+    node.template declare_parameter<double>("max_range", 0.0);
     node.template declare_parameter<double>("angle_start", 0.0);
     node.template declare_parameter<double>("angle_end", 0.0);
     node.template declare_parameter<double>("time_offset", 0.0);
@@ -183,6 +186,12 @@ public:
     RCLCPP_INFO(getLogger(), "skip: %i", skip);
     m_config.m_communications_settings.publishing_frequency =
         skipToPublishFrequency(skip);
+
+    node.template get_parameter<double>("min_range", m_config.m_range_min);
+    RCLCPP_INFO(getLogger(), "min_range: %f", m_config.m_range_min);
+
+    node.template get_parameter<double>("max_range", m_config.m_range_max);
+    RCLCPP_INFO(getLogger(), "max_range: %f", m_config.m_range_max);
 
     float angle_start;
     node.template get_parameter<float>("angle_start", angle_start);

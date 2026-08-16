@@ -84,10 +84,12 @@ MessageCreator::createLaserScanMsg(const sick::datastructure::Data &data,
       scan.ranges[i] = static_cast<float>(scan_point.getDistance()) *
                        data.getDerivedValuesPtr()->getMultiplicationFactor() *
                        1e-3; // mm -> m
-      // Set values close to/greater than max range to infinity according to REP
-      // 117 https://www.ros.org/reps/rep-0117.html
-      if (scan.ranges[i] >= (0.999 * m_range_max)) {
+      // Report out of range readings according to REP 117
+      // https://www.ros.org/reps/rep-0117.html
+      if (scan.ranges[i] > m_range_max) {
         scan.ranges[i] = std::numeric_limits<double>::infinity();
+      } else if (scan.ranges[i] < m_range_min) {
+        scan.ranges[i] = -std::numeric_limits<double>::infinity();
       }
     } else {
       scan.ranges[i] = std::numeric_limits<double>::infinity();

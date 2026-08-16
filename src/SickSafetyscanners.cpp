@@ -323,8 +323,14 @@ void SickSafetyscanners::readTypeCodeSettings() {
   m_device->requestTypeCode(type_code);
   m_config.m_communications_settings.e_interface_type =
       type_code.getInterfaceType();
-  m_config.m_range_min = 0.1;
-  m_config.m_range_max = type_code.getMaxRange();
+  // Only fall back to the sensor defaults when the range was left at its
+  // initial value, i.e. no min_range/max_range parameter was given.
+  if (m_config.m_range_min < 0.01) {
+    m_config.m_range_min = 0.1;
+  }
+  if (m_config.m_range_max < 0.01) {
+    m_config.m_range_max = type_code.getMaxRange();
+  }
 }
 
 void SickSafetyscanners::readPersistentConfig() {
