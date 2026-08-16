@@ -2,6 +2,19 @@
 Changelog for package sick_safetyscanners2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Added launch file exposing the driver settings as launch arguments and
+  supporting composition
+* Added support for running the driver as a composable node, publishing scans
+  as unique_ptr for intra process communication
+* Added min_range and max_range parameters and report readings below the
+  minimum range as -infinity according to REP 117
+* Fixed laser scan timestamp to refer to the first ray instead of the time the
+  completed scan was received
+* Added Docker environment for ROS 2 Jazzy
+* Contributors: sgsuh
+
 1.0.5 (2026-05-07)
 ------------------
 * Updated maintainer list in package.xml
