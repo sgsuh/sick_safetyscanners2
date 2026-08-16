@@ -48,7 +48,6 @@ MessageCreator::createLaserScanMsg(const sick::datastructure::Data &data,
                                    rclcpp::Time now) {
   sensor_msgs::msg::LaserScan scan;
   scan.header.frame_id = m_frame_id;
-  scan.header.stamp = now + rclcpp::Duration::from_seconds(m_time_offset);
   // TODO check why returned number of beams is misaligned to size of vector
   std::vector<sick::datastructure::ScanPoint> scan_points =
       data.getMeasurementDataPtr()->getScanPointsVector();
@@ -72,6 +71,11 @@ MessageCreator::createLaserScanMsg(const sick::datastructure::Data &data,
   scan.range_max = m_range_max;
   scan.ranges.resize(num_scan_points);
   scan.intensities.resize(num_scan_points);
+
+  // sensor_msgs/LaserScan defines the stamp as the acquisition time of the
+  // first ray, while `now` is taken when the completed scan was received.
+  scan.header.stamp = now - rclcpp::Duration::from_seconds(scan.scan_time) +
+                      rclcpp::Duration::from_seconds(m_time_offset);
 
   for (uint32_t i = 0; i < num_scan_points; ++i) {
     const sick::datastructure::ScanPoint scan_point = scan_points.at(i);
