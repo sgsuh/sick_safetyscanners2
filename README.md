@@ -81,6 +81,32 @@ ros2 launch sick_safetyscanners2 sick_safetyscanners2_launch.py
 
 This will start the driver with the in launch file defined parameters.
 
+#### Composable Node
+
+`sick_safetyscanners2_launch.py` and the lifecycle launch file have their
+parameters hard-coded. To set them from the command line, or to load the driver
+into a component container, use the composable launch file instead:
+
+```
+ros2 launch sick_safetyscanners2 sick_safetyscanners2_composable_launch.py \
+    sensor_ip:=192.168.1.11 host_ip:=192.168.1.9
+```
+
+With `use_composition:=true` the driver is loaded into an already running
+container, which enables zero copy intra process transport of the scan messages:
+
+```
+ros2 run rclcpp_components component_container --ros-args -r __node:=drivers_container
+
+ros2 launch sick_safetyscanners2 sick_safetyscanners2_composable_launch.py \
+    use_composition:=true container_name:=/drivers_container
+```
+
+Available launch arguments: `namespace`, `node_name`, `topic`, `frame_id`,
+`sensor_ip`, `host_ip`, `interface_ip`, `skip`, `min_range`, `max_range`,
+`angle_start`, `angle_end`, `time_offset`, `use_composition`, `container_name`
+and `log_level`.
+
 #### Lifecycle Node
 
 To start the driver within a lifecycle the launch file has to be started. For the driver to work correctly, the sensor ip and host ip have to be defined. These parameters can be passed to the sensor as arguments via launch file.
@@ -182,6 +208,8 @@ Returns the status overview of the sensor.
 | skip                  | Integer | 0            |                     | The number of scans to skip between each measured scan.  For a 25Hz laser, setting 'skip' to 0 makes it publish at 25Hz, 'skip' to 1 makes it publish at 12.5Hz.                                                                           |
 | angle_start           | Double  | 0.0          |                     | Start angle of scan in radians, if both start and end angle are equal, all angels are regarded.  0° is at the front of the scanner.                                                                                                        |
 | angle_end             | Double  | 0.0          |                     | End angle of scan in radians, if both start and end angle are equal, all angels are regarded.  0° is at the front of the scanner.                                                                                                          |
+| min_range             | Double  | 0.0          |                     | Minimum range in meters. Readings below it are reported as -infinity, following [REP 117](https://www.ros.org/reps/rep-0117.html). Zero keeps the sensor default of 0.1 m.                                                                 |
+| max_range             | Double  | 0.0          |                     | Maximum range in meters. Readings above it are reported as +infinity, following [REP 117](https://www.ros.org/reps/rep-0117.html). Zero keeps the maximum range reported by the sensor's type code.                                        |
 | min_intensities       | Double  | 0.0          |                     | If this parameter is set, all points below the one set in the parameter are set to infinity                                                                                                                                                |
 | channel_enabled       | Boolean | true         |                     | If the channel should be enabled                                                                                                                                                                                                           |
 | general_system_state  | Boolean | true         |                     | If the general system state should be published                                                                                                                                                                                            |
