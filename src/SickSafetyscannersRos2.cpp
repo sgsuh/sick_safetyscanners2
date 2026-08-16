@@ -34,10 +34,16 @@
 
 #include <sick_safetyscanners2/SickSafetyscannersRos2.h>
 
+#include <rclcpp_components/register_node_macro.hpp>
+
+#include <memory>
+#include <utility>
+
 namespace sick {
 
-SickSafetyscannersRos2::SickSafetyscannersRos2()
-    : Node("SickSafetyscannersRos2") {
+SickSafetyscannersRos2::SickSafetyscannersRos2(
+    const rclcpp::NodeOptions &node_options)
+    : Node("SickSafetyscannersRos2", node_options) {
   RCLCPP_INFO(this->get_logger(), "Initializing SickSafetyscannersRos2 Node");
 
   // read parameters!
@@ -91,13 +97,17 @@ void SickSafetyscannersRos2::receiveUDPPaket(
 
   if (!data.getMeasurementDataPtr()->isEmpty() &&
       !data.getDerivedValuesPtr()->isEmpty()) {
-    auto scan = m_config.m_msg_creator->createLaserScanMsg(data, this->now());
-    m_diagnosed_laser_scan_publisher->publish(scan);
+    // Published as unique_ptr so that intra process communication can move
+    // the message instead of copying it.
+    auto scan = std::make_unique<sensor_msgs::msg::LaserScan>(
+        m_config.m_msg_creator->createLaserScanMsg(data, this->now()));
+    m_diagnosed_laser_scan_publisher->publish(std::move(scan));
 
-    sick_safetyscanners2_interfaces::msg::ExtendedLaserScan extended_scan =
-        m_config.m_msg_creator->createExtendedLaserScanMsg(data, this->now());
-
-    m_extended_laser_scan_publisher->publish(extended_scan);
+    auto extended_scan =
+        std::make_unique<sick_safetyscanners2_interfaces::msg::ExtendedLaserScan>(
+            m_config.m_msg_creator->createExtendedLaserScanMsg(data,
+                                                               this->now()));
+    m_extended_laser_scan_publisher->publish(std::move(extended_scan));
 
     auto output_paths = m_config.m_msg_creator->createOutputPathsMsg(data);
     m_output_paths_publisher->publish(output_paths);
@@ -107,3 +117,5 @@ void SickSafetyscannersRos2::receiveUDPPaket(
   m_raw_data_publisher->publish(m_last_raw_msg);
 }
 } // namespace sick
+
+RCLCPP_COMPONENTS_REGISTER_NODE(sick::SickSafetyscannersRos2)

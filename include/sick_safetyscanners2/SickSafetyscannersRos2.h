@@ -60,8 +60,12 @@ public:
   /*!
    * \brief Constructor of the ROS2 Node handling the Communication of the Sick
    * Safetyscanner
+   *
+   * \param node_options Node options, passed in by the component container
+   *                     when the node is loaded as a composable node
    */
-  SickSafetyscannersRos2();
+  explicit SickSafetyscannersRos2(
+      const rclcpp::NodeOptions &node_options = rclcpp::NodeOptions());
 
 private:
   // Publishers
